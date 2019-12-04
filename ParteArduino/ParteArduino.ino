@@ -6,11 +6,10 @@ dht DHT;
 #define foco 10
 float temperatura=0;
 float humedad=0;
-float tempHum[2];
 #define leer  11
 #define electro 12
 int data;
-
+int temperaturaMax=30;
 
 void setup() {
   Serial.begin(9600);
@@ -25,23 +24,14 @@ void loop() {
   int chk = DHT.read11(DHT11_PIN);
   temperatura= DHT.temperature;  
   humedad=DHT.humidity;
-  tempHum[0]={temperatura};
-  tempHum[1]={humedad};
   int valor = digitalRead(leer);
-
-  for (int i=0; i<2; i++){
-    Serial.println(tempHum[i]);
-  }
-
-  while(Serial.available()){
-    data = Serial.read();
-  }
-  if(data=='1')
+  
+  if(temperatura>=temperaturaMax)
   {
   digitalWrite(prender, HIGH);
   digitalWrite(foco,HIGH);
   }
-  else if(data=='0')
+  else if(temperatura<=temperaturaMax)
   {
   digitalWrite(prender, LOW);
   digitalWrite(foco,LOW);
