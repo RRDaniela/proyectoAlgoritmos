@@ -14,12 +14,17 @@
 char auth[] = "iabb2XUncClJZXSnx9KcziMrwHustwAP"; //Enter the Auth code which was send by Blink
 #define FIREBASE_HOST "proyectoalgoritmos-d3ba4.firebaseio.com"
 #define FIREBASE_AUTH "73Hd45LiGmM3OnxPOUh22Knkgew2wZOcYjNbwMYc"
+#define prenderVentilador D6
+#define prenderFoco D5
 // Your WiFi credentials.
 // Set password to "" for open networks.
 char ssid[] = "HOME_WIFI";  //Enter your WIFI Name
 char pass[] = "2439584223";  //Enter your WIFI Password
+int maxTemperatura= 30;
+int maxHumedad=90;
+int bandera = 1;
 
-#define DHTPIN 2          // Digital pin 4
+#define DHTPIN 2          // Digital pin 
 
 // Uncomment whatever type you're using!
 #define DHTTYPE DHT11     // DHT 11
@@ -34,22 +39,38 @@ SimpleTimer timer;
 // that you define how often to send data to Blynk App.
 void sendSensor()
 {
-  float h = dht.readHumidity();
-  float t = dht.readTemperature(); // or dht.readTemperature(true) for Fahrenheit
+  float humedad = dht.readHumidity();
+  float temperatura = dht.readTemperature(); // or dht.readTemperature(true) for Fahrenheit
   
+  if(temperatura>=maxTemperatura)
+  {
+  digitalWrite(prenderVentilador, HIGH);
+  digitalWrite(prenderFoco,HIGH);
+  Serial.println("Ventilador");
+  }
+  else if(temperatura<=maxTemperatura)
+  {
+  digitalWrite(prenderVentilador, LOW);
+  digitalWrite(prenderFoco,LOW);
+  Serial.println("Foco");
+  }
 
-  if (isnan(h) || isnan(t)) {
+  if (isnan(humedad) || isnan(temperatura)) {
     Serial.println("Failed to read from DHT sensor!");
     return;
   }
   // You can send any value at any time.
   // Please don't send more that 10 values per second.
-  Blynk.virtualWrite(V5, h);  //V5 is for Humidity
-  Blynk.virtualWrite(V6, t);  //V6 is for Temperature
-  Firebase.setString("Proyecto/Temperatura",String(t));
-  Firebase.setString("Proyecto/Humedad",String(h));
-  if (h<90){
+  Blynk.virtualWrite(V5, humedad);  //V5 is for Humidity
+  Blynk.virtualWrite(V6, temperatura);  //V6 is for Temperature
+  Firebase.setString("Proyecto/Temperatura",String(temperatura));
+  Firebase.setString("Proyecto/Humedad",String(humedad));
+  if (humedad<maxHumedad && bandera==1){
     Blynk.notify("¡La humedad no es óptima para tus plantas! Aprieta el botón para regar.");
+    bandera=0;
+  }
+  else{
+    bandera=1;
   }
 }
 
@@ -59,6 +80,8 @@ void setup()
   Blynk.begin(auth, ssid, pass);
 
   pinMode(D7, OUTPUT);
+  pinMode(prenderFoco,OUTPUT);
+  pinMode(prenderVentilador,OUTPUT);
   dht.begin();
   WiFi.begin(ssid, pass);
   Serial.print("connecting");
@@ -77,7 +100,7 @@ void setup()
 }
 
 void loop()
-{
+{ 
   Blynk.run(); // Initiates Blynk
   timer.run(); // Initiates SimpleTimer
 }
