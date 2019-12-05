@@ -10,6 +10,10 @@ float humedad=0;
 #define electro 12
 int data;
 int temperaturaMax=30;
+#define leerVentilador  2
+#define escribirVentilador 3
+#define leerFoco  4
+#define escribirFoco  5
 
 void setup() {
   Serial.begin(9600);
@@ -17,6 +21,10 @@ void setup() {
   pinMode(foco,OUTPUT);
   pinMode(leer,INPUT);
   pinMode(electro,OUTPUT);
+  pinMode(leerVentilador,INPUT);
+  pinMode(leerFoco, INPUT);
+  pinMode(escribirVentilador,OUTPUT);
+  pinMode(escribirFoco, OUTPUT);
 }
 
 void loop() {
@@ -25,23 +33,25 @@ void loop() {
   temperatura= DHT.temperature;  
   humedad=DHT.humidity;
   int valor = digitalRead(leer);
-  
-  if(temperatura>=temperaturaMax)
-  {
-  digitalWrite(prender, HIGH);
-  digitalWrite(foco,HIGH);
-  }
-  else if(temperatura<=temperaturaMax)
-  {
-  digitalWrite(prender, LOW);
-  digitalWrite(foco,LOW);
-  }
+  int valorFoco = digitalRead(leerFoco);
+  int valorVentilador = digitalRead(leerVentilador);
+
   if(valor == HIGH){
     digitalWrite(electro,HIGH);
   }
   else if(valor ==LOW){
     digitalWrite(electro,LOW);
   }
+
+  if(valorFoco ==HIGH){
+    digitalWrite(escribirFoco,HIGH);
+    digitalWrite(escribirVentilador,HIGH);
+  }
+  else if(valorFoco==LOW){
+    digitalWrite(escribirFoco,LOW);
+    digitalWrite(escribirVentilador,LOW);
+  }
   
+
   delay(2000);
 }
